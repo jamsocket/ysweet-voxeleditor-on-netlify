@@ -12,7 +12,7 @@ const TRANSITION_RATE = 0.08
 
 interface Voxel {
   position: Vector3Tuple
-  color: any
+  color: number | string
   opacity: number
 }
 
@@ -151,9 +151,9 @@ export function VoxelEditor() {
   const [color, setColor] = useState('#D33115')
 
   const positionHasBeenSet = useRef(false)
-  const setInitialCameraPosition = (controls: any) => {
+  const setInitialCameraPosition = (controls: any ) => {
     if (controls && !positionHasBeenSet.current) {
-      controls.object.position.set(0, DIM, DIM)
+      controls.object.position.set(0, DIM * 0.6, DIM * 0.6)
       positionHasBeenSet.current = true
     }
   }
@@ -199,7 +199,7 @@ export function VoxelEditor() {
     [color, voxels],
   )
 
-  let voxelArray: Record<string, Voxel> = voxels.toJSON()
+  const voxelArray: Record<string, Voxel> = voxels.toJSON()
 
   return (
     <>

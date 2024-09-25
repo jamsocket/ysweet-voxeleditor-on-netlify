@@ -14,7 +14,7 @@ type HomeProps = {
 // For simplicity, we are hard-coding the connection string in the
 // file. In a real app, you should instead pass this in through a
 // secret store or environment variable.
-const CONNECTION_STRING = "[paste your connection string]"
+const CONNECTION_STRING = process.env.Y_SWEET_CONNECTION_STRING ?? ""
 
 export default async function Home({ searchParams }: HomeProps) {
   const clientToken = await getOrCreateDocAndToken(CONNECTION_STRING, searchParams.doc)
