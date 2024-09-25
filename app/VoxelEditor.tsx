@@ -1,24 +1,24 @@
-'use client'
+"use client";
 
-import { OrbitControls } from '@react-three/drei'
-import { Canvas, ThreeEvent, useFrame } from '@react-three/fiber'
-import { Compact } from '@uiw/react-color'
-import { usePresence, useMap, usePresenceSetter } from '@y-sweet/react'
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import { Vector3, Vector3Tuple } from 'three'
+import { OrbitControls } from "@react-three/drei";
+import { Canvas, ThreeEvent, useFrame } from "@react-three/fiber";
+import { Compact } from "@uiw/react-color";
+import { usePresence, useMap, usePresenceSetter } from "@y-sweet/react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { Vector3, Vector3Tuple } from "three";
 
-const DIM = 15
-const TRANSITION_RATE = 0.08
+const DIM = 15;
+const TRANSITION_RATE = 0.08;
 
 interface Voxel {
-  position: Vector3Tuple
-  color: number | string
-  opacity: number
+  position: Vector3Tuple;
+  color: number | string;
+  opacity: number;
 }
 
 function MovingVoxel(props: { voxel: Voxel; name?: string }) {
-  const [position, setPosition] = useState<Vector3Tuple>([0, 0, 0]) // this gets set before the first paint
-  const destPositionRef = useRef<Vector3Tuple | null>(null)
+  const [position, setPosition] = useState<Vector3Tuple>([0, 0, 0]); // this gets set before the first paint
+  const destPositionRef = useRef<Vector3Tuple | null>(null);
 
   useFrame(() => {
     if (destPositionRef.current) {
@@ -26,36 +26,37 @@ function MovingVoxel(props: { voxel: Voxel; name?: string }) {
         destPositionRef.current[0] - position[0],
         destPositionRef.current[1] - position[1],
         destPositionRef.current[2] - position[2],
-      ]
+      ];
 
-      const x = position[0] + delta[0] * TRANSITION_RATE
-      const y = position[1] + delta[1] * TRANSITION_RATE
-      const z = position[2] + delta[2] * TRANSITION_RATE
+      const x = position[0] + delta[0] * TRANSITION_RATE;
+      const y = position[1] + delta[1] * TRANSITION_RATE;
+      const z = position[2] + delta[2] * TRANSITION_RATE;
 
-      setPosition([x, y, z])
+      setPosition([x, y, z]);
 
-      const squaredDist = delta[0] * delta[0] + delta[1] * delta[1] + delta[2] * delta[2]
+      const squaredDist =
+        delta[0] * delta[0] + delta[1] * delta[1] + delta[2] * delta[2];
       if (squaredDist < 0.00001) {
-        destPositionRef.current = null
+        destPositionRef.current = null;
       }
     }
-  })
+  });
 
   useLayoutEffect(() => {
     const dest: Vector3Tuple = [
       props.voxel.position[0],
       props.voxel.position[1] + 0.5,
       props.voxel.position[2],
-    ]
+    ];
 
     const squaredDist =
       Math.pow(dest[0] - position[0], 2) +
       Math.pow(dest[1] - position[1], 2) +
-      Math.pow(dest[2] - position[2], 2)
+      Math.pow(dest[2] - position[2], 2);
     if (squaredDist > 0.00001) {
-      destPositionRef.current = dest
+      destPositionRef.current = dest;
     }
-  }, [props.voxel.position])
+  }, [props.voxel.position]);
 
   return (
     <mesh name={props.name} position={position} scale={1}>
@@ -67,7 +68,7 @@ function MovingVoxel(props: { voxel: Voxel; name?: string }) {
         transparent={props.voxel.opacity < 1}
       />
     </mesh>
-  )
+  );
 }
 
 function Voxel(props: { voxel: Voxel; name?: string }) {
@@ -75,7 +76,7 @@ function Voxel(props: { voxel: Voxel; name?: string }) {
     props.voxel.position[0],
     props.voxel.position[1] + 0.5,
     props.voxel.position[2],
-  ]
+  ];
   return (
     <mesh
       name={props.name}
@@ -92,23 +93,23 @@ function Voxel(props: { voxel: Voxel; name?: string }) {
         transparent={props.voxel.opacity < 1}
       />
     </mesh>
-  )
+  );
 }
 
 function getPosition(event: ThreeEvent<PointerEvent>): Vector3Tuple | null {
-  if (event.intersections.length === 0) return null
+  if (event.intersections.length === 0) return null;
 
-  const { face, point } = event.intersections[0]
-  const normal: Vector3 = face!.normal.clone()
+  const { face, point } = event.intersections[0];
+  const normal: Vector3 = face!.normal.clone();
 
-  const pos: Vector3 = point.clone().add(new Vector3(0.5, 0.0, 0.5))
+  const pos: Vector3 = point.clone().add(new Vector3(0.5, 0.0, 0.5));
 
-  const c = pos.add(normal.multiplyScalar(0.5)).floor()
-  return c.toArray()
+  const c = pos.add(normal.multiplyScalar(0.5)).floor();
+  return c.toArray();
 }
 
 interface VoxelSetProps {
-  voxels: Record<string, Voxel>
+  voxels: Record<string, Voxel>;
 }
 
 function VoxelSet(props: VoxelSetProps) {
@@ -118,92 +119,96 @@ function VoxelSet(props: VoxelSetProps) {
         <Voxel key={index} voxel={voxel} name={index} />
       ))}
     </>
-  )
+  );
 }
 
 type PresenceVoxel = {
-  position: [number, number, number] | null
-  color: string
-}
+  position: [number, number, number] | null;
+  color: string;
+};
 
 export function PresenceVoxels() {
-  const presence = usePresence<PresenceVoxel>()
+  const presence = usePresence<PresenceVoxel>();
 
   return (
     <>
       {Array.from(presence.entries()).map(([id, user]) => {
-        if (user.position === null) return null
+        if (user.position === null) return null;
 
         return (
           <MovingVoxel
             key={id}
             voxel={{ position: user.position, color: user.color, opacity: 0.5 }}
           />
-        )
+        );
       })}
     </>
-  )
+  );
 }
 
 export function VoxelEditor() {
-  const [ghostPosition, setGhostPosition] = useState<[number, number, number] | null>(null)
-  const voxels = useMap<Voxel>('voxels')
-  const [color, setColor] = useState('#D33115')
+  const [ghostPosition, setGhostPosition] = useState<
+    [number, number, number] | null
+  >(null);
+  const voxels = useMap<Voxel>("voxels");
+  const [color, setColor] = useState("#D33115");
 
-  const positionHasBeenSet = useRef(false)
-  const setInitialCameraPosition = (controls: any ) => {
+  const positionHasBeenSet = useRef(false);
+  const setInitialCameraPosition = (controls: any) => {
     if (controls && !positionHasBeenSet.current) {
-      controls.object.position.set(0, DIM * 0.6, DIM * 0.6)
-      positionHasBeenSet.current = true
+      controls.object.position.set(0, DIM * 0.6, DIM * 0.6);
+      positionHasBeenSet.current = true;
     }
-  }
+  };
 
-  const updatePresence = usePresenceSetter<PresenceVoxel>()
+  const updatePresence = usePresenceSetter<PresenceVoxel>();
 
   const pointerMove = useCallback(
     (event: ThreeEvent<PointerEvent>) => {
-      const position = getPosition(event)
-      setGhostPosition(position)
+      const position = getPosition(event);
+      setGhostPosition(position);
 
       updatePresence({
         position: position,
         color: color,
-      })
+      });
     },
     [setGhostPosition],
-  )
+  );
 
   const handleClick = useCallback(
     (event: ThreeEvent<MouseEvent>) => {
       if (event.delta > 5) {
         // ignore drag events, which are handled by the orbit control
-        return
+        return;
       }
 
       if (event.shiftKey) {
         if (event.object.name) {
-          voxels.delete(event.object.name)
+          voxels.delete(event.object.name);
         }
 
-        event.stopPropagation()
-        return
+        event.stopPropagation();
+        return;
       }
 
-      const position = getPosition(event as any)
+      const position = getPosition(event as any);
       if (position) {
-        voxels.set(position.join(':'), { color, position, opacity: 1 })
+        voxels.set(position.join(":"), { color, position, opacity: 1 });
       }
 
-      event.stopPropagation()
+      event.stopPropagation();
     },
     [color, voxels],
-  )
+  );
 
-  const voxelArray: Record<string, Voxel> = voxels.toJSON()
+  const voxelArray: Record<string, Voxel> = voxels.toJSON();
 
   return (
     <>
-      <div style={{ position: 'absolute', top: 0, right: 0, left: 0, bottom: 0 }}>
+      <div
+        style={{ position: "absolute", top: 0, right: 0, left: 0, bottom: 0 }}
+      >
         <Canvas shadows>
           <OrbitControls ref={setInitialCameraPosition} />
           <ambientLight intensity={2} />
@@ -212,7 +217,9 @@ export function VoxelEditor() {
           <pointLight position={[10, 10, 0]} intensity={100} castShadow />
 
           {ghostPosition ? (
-            <Voxel voxel={{ position: ghostPosition, color: 0x000000, opacity: 0.5 }} />
+            <Voxel
+              voxel={{ position: ghostPosition, color: 0x000000, opacity: 0.5 }}
+            />
           ) : null}
 
           <PresenceVoxels />
@@ -230,5 +237,5 @@ export function VoxelEditor() {
       </div>
       <Compact color={color} onChange={(color) => setColor(color.hex)} />
     </>
-  )
+  );
 }

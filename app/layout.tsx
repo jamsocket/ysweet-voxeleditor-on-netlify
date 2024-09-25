@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import CopyLink from "./components/CopyLink";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Y-Sweet Voxel Editor on Netlify",
@@ -16,7 +18,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <div className="h-full flex flex-col">
+          <div className="h-full relative w-auto">{children}</div>
+          <CopyLink />
+        </div>
       </body>
     </html>
   );
