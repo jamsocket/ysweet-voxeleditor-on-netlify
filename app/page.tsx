@@ -1,22 +1,18 @@
 import { VoxelEditor } from "./VoxelEditor";
 import { YDocProvider } from "@y-sweet/react";
-import { getOrCreateDocAndToken } from "@y-sweet/sdk";
-import { CONNECTION_STRING } from "./lib/config";
 
-type HomeProps = {
-  // searchParams is an object provided by Next.js containing URL parameters.
-  // See: https://nextjs.org/docs/app/api-reference/file-conventions/page
-  searchParams: Record<string, string>;
-};
+function randomDocId() {
+  return Math.random().toString(36).substring(2, 10);
+}
 
-export default async function Home({ searchParams }: HomeProps) {
-  const clientToken = await getOrCreateDocAndToken(
-    CONNECTION_STRING,
-    searchParams.doc,
-  );
-
+export default async function Home(props: { searchParams: { doc: string } }) {
+  const docId = props.searchParams.doc || randomDocId();
   return (
-    <YDocProvider clientToken={clientToken} setQueryParam="doc">
+    <YDocProvider
+      docId={docId}
+      authEndpoint="/.netlify/functions/ysweet-auth"
+      setQueryParam="doc"
+    >
       <VoxelEditor />
     </YDocProvider>
   );
